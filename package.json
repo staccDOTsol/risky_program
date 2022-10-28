@@ -7,7 +7,7 @@
     "dev": "next dev",
     "devnet": "NEXT_PUBLIC_CLUSTER=devnet NEXT_PUBLIC_ENDPOINT=https://mango.devnet.rpcpool.com/ NEXT_PUBLIC_GROUP=devnet.2 next dev",
     "testnet": "NEXT_PUBLIC_CLUSTER=testnet NEXT_PUBLIC_ENDPOINT=https://api.testnet.solana.com NEXT_PUBLIC_GROUP=testnet.0 next dev",
-    "build": "next build",
+    "build": "mv solend-sdk ../ && next build",
     "start": "next start",
     "prepare": "husky install",
     "type-check": "tsc --pretty --noEmit",
