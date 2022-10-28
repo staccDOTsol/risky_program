@@ -52,8 +52,8 @@ import { PerpMarketInfo } from '@blockworks-foundation/mango-client'
 export const ENDPOINTS: EndpointInfo[] = [
   {
     name: 'mainnet',
-    url: process.env.NEXT_PUBLIC_ENDPOINT || 'https://mango.rpcpool.com',
-    websocket: process.env.NEXT_PUBLIC_ENDPOINT || 'https://mango.rpcpool.com',
+    url: process.env.NEXT_PUBLIC_ENDPOINT || 'https://solana-mainnet.g.alchemy.com/v2/Zf8WbWIes5Ivksj_dLGL_txHMoRA7-Kr',
+    websocket: process.env.NEXT_PUBLIC_ENDPOINT || 'https://solana-mainnet.g.alchemy.com/v2/Zf8WbWIes5Ivksj_dLGL_txHMoRA7-Kr',
     custom: false,
   },
   {
