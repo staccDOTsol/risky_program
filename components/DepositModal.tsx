@@ -20,7 +20,7 @@
  import { INVESTIN_PROGRAM_ID } from 'utils/tokens'
  import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
- import { depositReserveLiquidityInstruction ,redeemReserveCollateralInstruction,refreshReserveInstruction} from "../../solend-sdk/dist";
+ import { depositReserveLiquidityInstruction ,redeemReserveCollateralInstruction,refreshReserveInstruction} from "../solend-sdk/dist";
 import { PublicKey, Transaction } from '@solana/web3.js'
 
 
