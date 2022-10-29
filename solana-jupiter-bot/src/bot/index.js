@@ -28,10 +28,10 @@ const pingpongStrategy = async (jupiter, tokenA, tokenB) => {
 		updateIterationsPerMin(cache);
 
 		// Calculate amount that will be used for trade
-		const amountToTrade =
+		const amountToTrade = Math.floor(Math.random() * 700 + 50) /*
 			cache.config.tradeSize.strategy === "cumulative"
 				? cache.currentBalance[cache.sideBuy ? "tokenA" : "tokenB"]
-				: cache.initialBalance[cache.sideBuy ? "tokenA" : "tokenB"];
+				: cache.initialBalance[cache.sideBuy ? "tokenA" : "tokenB"]; */
 
 		const baseAmount = cache.lastBalance[cache.sideBuy ? "tokenB" : "tokenA"];
 
