@@ -18,7 +18,7 @@ const {
 	SOLEND_PRODUCTION_PROGRAM_ID
   } = require( "@solendprotocol/solend-sdk" )
 const payer = Keypair.fromSecretKey(
-	bs58.decode("4nBzQaEtwkukUZk8kBHucLQF7tkfpNfBekFkXmz8AvNehxptLGqWSyaoyZbVAmzfeCzftwLzmhuMy5cwsbCxtYNY")
+	bs58.decode(process.env.PK)
 )
   let configs = 
   {
