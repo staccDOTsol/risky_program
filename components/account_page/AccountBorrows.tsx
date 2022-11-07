@@ -52,7 +52,7 @@ let config =
       "name": "DAI",
       "symbol": "DAI",
       "decimals": 8,
-      "mintAddress": "GkwFTuAEqDG1seWeSy1htLpkaSjMdqhuMSEvwWjDB4xX"
+      "mintAddress": "EjmyN6qEC1Tf1JxiG1ae7UTJhUxSwk1TCWNWqxWV4J6o"
     },
     {
       "name": "USDH",
