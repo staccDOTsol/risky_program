@@ -66,7 +66,7 @@ const CreateAlertModal: FunctionComponent<CreateAlertModalProps> = ({
     }
     const body: AlertRequest = {
       mangoGroupPk: mangoGroup.publicKey.toString(),
-      mangoAccountPk: mangoAccount.publicKey.toString(),
+      mangoAccountPk: mangoAccount?.publicKey.toString(),
       health: parsedHealth,
       alertProvider: 'mail',
       email,
@@ -214,7 +214,7 @@ const CreateAlertModal: FunctionComponent<CreateAlertModalProps> = ({
                 className="mx-auto mt-6 flex justify-center"
                 onClick={() =>
                   mangoAccount
-                    ? actions.loadAlerts(mangoAccount.publicKey)
+                    ? actions.loadAlerts(mangoAccount?.publicKey)
                     : null
                 }
               >

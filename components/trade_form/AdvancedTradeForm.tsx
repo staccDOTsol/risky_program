@@ -91,7 +91,7 @@ export default function AdvancedTradeForm({
   )
   let perpAccount
   if (isPerpMarket && mangoAccount) {
-    perpAccount = mangoAccount.perpAccounts[marketIndex]
+    perpAccount = mangoAccount?.perpAccounts[marketIndex]
   }
 
   const { width } = useViewport()
@@ -230,7 +230,7 @@ export default function AdvancedTradeForm({
 
       const availableBalance = floorToDecimal(
         nativeI80F48ToUi(
-          mangoAccount.getAvailableBalance(mangoGroup, mangoCache, tokenIndex),
+          mangoAccount?.getAvailableBalance(mangoGroup, mangoCache, tokenIndex),
           token.decimals
         ).toNumber(),
         token.decimals
@@ -256,7 +256,7 @@ export default function AdvancedTradeForm({
       max: maxQuote,
       deposits,
       borrows,
-    } = mangoAccount.getMaxLeverageForMarket(
+    } = mangoAccount?.getMaxLeverageForMarket(
       mangoGroup,
       mangoCache,
       marketIndex,

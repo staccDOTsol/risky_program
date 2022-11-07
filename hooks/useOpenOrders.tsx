@@ -33,7 +33,7 @@ function parseSpotOrders(
   mangoAccount: MangoAccount,
   accountInfos
 ) {
-  const openOrders = mangoAccount.spotOpenOrdersAccounts[config.marketIndex]
+  const openOrders = mangoAccount?.spotOpenOrdersAccounts[config.marketIndex]
   if (!openOrders) return []
 
   let bidOrderBook = accountInfos[market['_decoded'].bids.toBase58()]?.parsed
@@ -97,10 +97,10 @@ function parsePerpOpenOrders(
   }
 
   const openOrdersForMarket = [...bidOrderBook, ...askOrderBook].filter((o) =>
-    o.owner.equals(mangoAccount.publicKey)
+    o.owner.equals(mangoAccount?.publicKey)
   )
 
-  const advancedOrdersForMarket = mangoAccount.advancedOrders
+  const advancedOrdersForMarket = mangoAccount?.advancedOrders
     .map((o, i) => {
       const pto = o.perpTrigger
       if (pto && pto.isActive && pto.marketIndex == config.marketIndex) {

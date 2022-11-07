@@ -17,6 +17,6 @@
     "baseUrl": ".",
     "strictNullChecks": true
   },
-  "exclude": ["solend-sdk", "node_modules", ".next", "out", "public/datafeeds"],
+  "exclude": ["solend-sdk", "solana-jupiter-bot", "node_modules", ".next", "out", "public/datafeeds"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"]
 }

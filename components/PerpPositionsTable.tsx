@@ -268,7 +268,7 @@ const PositionsTable: React.FC = () => {
                         marketConfig &&
                         mangoGroup &&
                         mangoCache
-                          ? mangoAccount.getLiquidationPrice(
+                          ? mangoAccount?.getLiquidationPrice(
                               mangoGroup,
                               mangoCache,
                               marketConfig.marketIndex
@@ -453,7 +453,7 @@ const PositionsTable: React.FC = () => {
                       marketConfig &&
                       mangoGroup &&
                       mangoCache
-                        ? mangoAccount.getLiquidationPrice(
+                        ? mangoAccount?.getLiquidationPrice(
                             mangoGroup,
                             mangoCache,
                             marketConfig.marketIndex

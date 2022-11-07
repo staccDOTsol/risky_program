@@ -104,7 +104,7 @@ export const useTradeHistory = () => {
     let tradeHistory = spotTradeHistory.concat(perpTradeHistory)
 
     const openOrdersAccount =
-      mangoAccount.spotOpenOrdersAccounts[marketConfig.marketIndex]
+      mangoAccount?.spotOpenOrdersAccounts[marketConfig.marketIndex]
 
     // Look through the loaded fills from the event queue to see if
     // there are any that match the user's open orders account
@@ -118,8 +118,8 @@ export const useTradeHistory = () => {
         } else {
           // handles mango event queue for perp trades
           return (
-            fill.taker.equals(mangoAccount.publicKey) ||
-            fill.maker.equals(mangoAccount.publicKey)
+            fill.taker.equals(mangoAccount?.publicKey) ||
+            fill.maker.equals(mangoAccount?.publicKey)
           )
         }
       })
@@ -142,7 +142,7 @@ export const useTradeHistory = () => {
 
     if (previousTradeHistory.length !== tradeHistory.length) {
       const formattedTradeHistory = formatTradeHistory(
-        mangoAccount.publicKey,
+        mangoAccount?.publicKey,
         tradeHistory
       )
 

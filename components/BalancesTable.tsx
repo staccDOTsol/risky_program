@@ -316,7 +316,7 @@ const BalancesTable = ({
                     //   marketIndex &&
                     //   mangoGroup &&
                     //   mangoCache
-                    //     ? mangoAccount.getLiquidationPrice(
+                    //     ? mangoAccount?.getLiquidationPrice(
                     //         mangoGroup,
                     //         mangoCache,
                     //         marketIndex
@@ -457,6 +457,7 @@ const BalancesTable = ({
                 )}
                 {showWithdrawModal && (
                   <WithdrawModal
+
                     isOpen={showWithdrawModal}
                     onClose={() => setShowWithdrawModal(false)}
                     tokenSymbol={actionSymbol}
@@ -495,7 +496,7 @@ const BalancesTable = ({
                   //   marketIndex &&
                   //   mangoGroup &&
                   //   mangoCache
-                  //     ? mangoAccount.getLiquidationPrice(
+                  //     ? mangoAccount?.getLiquidationPrice(
                   //         mangoGroup,
                   //         mangoCache,
                   //         marketIndex

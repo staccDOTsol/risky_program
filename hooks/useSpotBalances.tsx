@@ -31,7 +31,7 @@ useMangoStore.subscribe(
       baseSymbol,
       name,
     } of mangoGroupConfig.spotMarkets) {
-      const openOrders: any = mangoAccount.spotOpenOrdersAccounts[marketIndex]
+      const openOrders: any = mangoAccount?.spotOpenOrdersAccounts[marketIndex]
       const quoteCurrencyIndex = QUOTE_INDEX
 
       let nativeBaseFree = 0
@@ -65,7 +65,7 @@ useMangoStore.subscribe(
               I80F48.fromNumber(nativeBaseLocked),
               mangoGroup.tokens[tokenIndex].decimals
             ).sub(
-              mangoAccount.getUiBorrow(
+              mangoAccount?.getUiBorrow(
                 mangoCache.rootBankCache[tokenIndex],
                 mangoGroup,
                 tokenIndex
@@ -89,12 +89,12 @@ useMangoStore.subscribe(
           market: null,
           key: `${baseSymbol}${name}`,
           symbol: baseSymbol,
-          deposits: mangoAccount.getUiDeposit(
+          deposits: mangoAccount?.getUiDeposit(
             mangoCache.rootBankCache[tokenIndex],
             mangoGroup,
             tokenIndex
           ),
-          borrows: mangoAccount.getUiBorrow(
+          borrows: mangoAccount?.getUiBorrow(
             mangoCache.rootBankCache[tokenIndex],
             mangoGroup,
             tokenIndex
@@ -117,12 +117,12 @@ useMangoStore.subscribe(
           market: null,
           key: `${name}`,
           symbol: mangoGroupConfig.quoteSymbol,
-          deposits: mangoAccount.getUiDeposit(
+          deposits: mangoAccount?.getUiDeposit(
             mangoCache.rootBankCache[quoteCurrencyIndex],
             mangoGroup,
             quoteCurrencyIndex
           ),
-          borrows: mangoAccount.getUiBorrow(
+          borrows: mangoAccount?.getUiBorrow(
             mangoCache.rootBankCache[quoteCurrencyIndex],
             mangoGroup,
             quoteCurrencyIndex

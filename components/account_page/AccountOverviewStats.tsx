@@ -60,7 +60,7 @@ const AccountOverviewStats = ({ hourlyPerformanceStats, accountValue }) => {
 
   const maintHealthRatio = useMemo(() => {
     return mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealthRatio(mangoGroup, mangoCache, 'Maint')
+      ? mangoAccount?.getHealthRatio(mangoGroup, mangoCache, 'Maint')
       : 100
   }, [mangoAccount, mangoGroup, mangoCache])
 

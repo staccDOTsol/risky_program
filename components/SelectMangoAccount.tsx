@@ -23,7 +23,7 @@ const SelectMangoAccount = ({
   const [, setLastAccountViewed] = useLocalStorageState(LAST_ACCOUNT_KEY)
 
   const handleMangoAccountChange = (mangoAccount: MangoAccount) => {
-    setLastAccountViewed(mangoAccount.publicKey.toString())
+    setLastAccountViewed(mangoAccount?.publicKey.toString())
     setMangoStore((state) => {
       state.selectedMangoAccount.current = mangoAccount
     })

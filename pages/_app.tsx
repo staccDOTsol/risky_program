@@ -145,7 +145,7 @@ const PageTitle = () => {
 
   return (
     <Head>
-      <title>{marketTitleString}Mango Markets</title>
+      <title>{marketTitleString}Risk.LOL Protocol</title>
     </Head>
   )
 }
@@ -171,8 +171,8 @@ function App({ Component, pageProps }) {
         options: {
           projectId: 'f3d38b197d7039c03c345f82ed68ef9b',
           metadata: {
-            name: 'Mango Markets',
-            description: 'Mango Markets',
+            name: 'Risk.LOL Protocol',
+            description: 'Risk.LOL Protocol',
             url: 'https://trade.mango.markets/',
             icons: ['https://trade.mango.markets/assets/icons/logo.svg'],
           },
@@ -185,17 +185,17 @@ function App({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>Mango Markets</title>
+        <title>Risk.LOL Protocol</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content="Mango Markets" />
+        <meta property="og:title" content="Risk.LOL Protocol" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
           name="keywords"
-          content="Mango Markets, Serum, SRM, Serum DEX, DEFI, Decentralized Finance, Decentralised Finance, Crypto, ERC20, Ethereum, Decentralize, Solana, SOL, SPL, Cross-Chain, Trading, Fastest, Fast, SerumBTC, SerumUSD, SRM Tokens, SPL Tokens"
+          content="Risk.LOL Protocol, Serum, SRM, Serum DEX, DEFI, Decentralized Finance, Decentralised Finance, Crypto, ERC20, Ethereum, Decentralize, Solana, SOL, SPL, Cross-Chain, Trading, Fastest, Fast, SerumBTC, SerumUSD, SRM Tokens, SPL Tokens"
         />
         <meta
           name="description"
-          content="Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
+          content="Risk.LOL Protocol - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
         />
         <link
           rel="apple-touch-icon"
@@ -205,10 +205,10 @@ function App({ Component, pageProps }) {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mango Markets" />
+        <meta name="twitter:title" content="Risk.LOL Protocol" />
         <meta
           name="twitter:description"
-          content="Mango Markets - Decentralised, cross-margin trading up to 20x leverage with lightning speed and near-zero fees."
+          content="Risk.LOL Protocol - Decentralised, cross-margin trading up to 20x leverage with lightning speed and near-zero fees."
         />
         <meta
           name="twitter:image"

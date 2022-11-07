@@ -359,7 +359,7 @@ export default function SimpleTradeForm({ initLeverage }) {
       max: maxQuote,
       deposits,
       borrows,
-    } = mangoAccount.getMaxLeverageForMarket(
+    } = mangoAccount?.getMaxLeverageForMarket(
       mangoGroup,
       mangoCache,
       marketIndex,

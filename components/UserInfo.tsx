@@ -34,7 +34,7 @@ const UserInfoTabs = ({ activeTab, setActiveTab }) => {
         ]}
         tabs={TABS}
       />
-      {mangoAccount ? (
+      {true ? (
         <div className="absolute right-0 top-0 -mt-1">
           <ManualRefresh />
         </div>

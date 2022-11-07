@@ -54,7 +54,7 @@ const AccountFunding = () => {
 
   const mangoAccountPk = useMemo(() => {
     if (mangoAccount) {
-      return mangoAccount.publicKey.toString()
+      return mangoAccount?.publicKey.toString()
     }
   }, [mangoAccount])
 
@@ -230,7 +230,7 @@ const AccountFunding = () => {
           </div>
         </Button>
       </div>
-      {mangoAccount ? (
+      {true ? (
         <div>
           {loadTotalStats ? (
             <div className="space-y-2">

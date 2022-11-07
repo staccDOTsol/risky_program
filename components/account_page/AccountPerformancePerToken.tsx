@@ -87,7 +87,7 @@ const AccountPerformance = () => {
 
   const mangoAccountPk = useMemo(() => {
     if (mangoAccount) {
-      return mangoAccount.publicKey.toString()
+      return mangoAccount?.publicKey.toString()
     }
   }, [mangoAccount])
 
@@ -399,7 +399,7 @@ const AccountPerformance = () => {
           </Select.Option>
         ))}
       </Select>
-      {mangoAccount ? (
+      {true ? (
         <>
           <div
             className="h-[540px] w-full rounded-lg rounded-b-none border border-th-bkg-3 p-6 pb-24 sm:pb-16"

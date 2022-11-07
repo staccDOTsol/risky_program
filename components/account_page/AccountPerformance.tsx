@@ -41,7 +41,7 @@ const AccountPerformance = () => {
 
   const mangoAccountPk = useMemo(() => {
     if (mangoAccount) {
-      return mangoAccount.publicKey.toString()
+      return mangoAccount?.publicKey.toString()
     }
   }, [mangoAccount])
 
@@ -117,7 +117,7 @@ const AccountPerformance = () => {
           </Button>
         </div>
       </div>
-      {mangoAccount ? (
+      {true ? (
         <div>
           <>
             {!isEmpty(hourlyPerformanceStats) && !loading ? (

@@ -144,7 +144,7 @@ export default function Fees() {
           <div className="border-b border-t border-th-bkg-3 p-3 sm:p-4">
             <div className="flex items-center justify-between pb-0.5 text-th-fgd-3">
               {totalMsrm > 0 ? 'MSRM' : 'SRM'} {t('deposits')}
-              {connected && mangoAccount ? (
+              {connected && true ? (
                 <div className="flex justify-center space-x-3 pl-2">
                   <LinkButton
                     onClick={() => setShowDeposit(true)}
@@ -152,7 +152,7 @@ export default function Fees() {
                   >
                     {t('deposit')}
                   </LinkButton>
-                  {mangoAccount.msrmAmount.gt(ZERO_BN) ? (
+                  {mangoAccount?.msrmAmount.gt(ZERO_BN) ? (
                     <LinkButton onClick={() => setShowWithdraw(true)}>
                       {t('withdraw')}
                     </LinkButton>

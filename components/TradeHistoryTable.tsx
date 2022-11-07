@@ -117,7 +117,7 @@ const TradeHistoryTable = ({
     if (!mangoAccount) return
     setLoadExportData(true)
     const exportData = await fetchHourlyPerformanceStats(
-      mangoAccount.publicKey.toString(),
+      mangoAccount?.publicKey.toString(),
       10000
     )
     const dataToExport = exportData.map((row) => {
@@ -130,7 +130,7 @@ const TradeHistoryTable = ({
     })
 
     const title = `${
-      mangoAccount.name || mangoAccount.publicKey
+      mangoAccount?.name || mangoAccount?.publicKey
     }-Performance-${new Date().toLocaleDateString()}`
     const headers = ['Timestamp', 'Account Equity', 'PNL']
 
@@ -144,12 +144,12 @@ const TradeHistoryTable = ({
 
   const mangoAccountPk = useMemo(() => {
     if (mangoAccount) {
-      return mangoAccount.publicKey.toString()
+      return mangoAccount?.publicKey.toString()
     }
   }, [mangoAccount])
 
   const canWithdraw =
-    mangoAccount && publicKey ? mangoAccount.owner.equals(publicKey) : false
+    mangoAccount && publicKey ? mangoAccount?.owner.equals(publicKey) : false
 
   return (
     <>
@@ -174,25 +174,7 @@ const TradeHistoryTable = ({
                   })}
             </h4>
 
-            {mangoAccount ? (
-              <Tooltip
-                content={
-                  <div className="mr-4 text-xs text-th-fgd-3">
-                    {t('delay-displaying-recent')} {t('use-explorer-one')}
-                    <a
-                      href={`https://explorer.solana.com/address/${mangoAccount.publicKey.toString()}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {t('use-explorer-two')}
-                    </a>
-                    {t('use-explorer-three')}
-                  </div>
-                }
-              >
-                <InformationCircleIcon className="ml-1.5 h-5 w-5 cursor-pointer text-th-fgd-4" />
-              </Tooltip>
-            ) : null}
+            {null}
           </div>
 
           <div className="flex items-center space-x-3">
@@ -233,7 +215,7 @@ const TradeHistoryTable = ({
               <div className={`flex items-center`}>
                 <a
                   className={`default-transition flex h-8 w-full items-center justify-center whitespace-nowrap rounded-full bg-th-bkg-button pt-0 pb-0 pl-3 pr-3 text-xs font-bold text-th-fgd-1 hover:text-th-fgd-1 hover:brightness-[1.1]`}
-                  href={`https://event-history-api.herokuapp.ca/all_trades_csv?mango_account=${mangoAccountPk}&open_orders=${mangoAccount.spotOpenOrders
+                  href={`https://event-history-api.herokuapp.ca/all_trades_csv?mango_account=${mangoAccountPk}&open_orders=${mangoAccount?.spotOpenOrders
                     .filter(
                       (e) => e.toString() !== '11111111111111111111111111111111'
                     )

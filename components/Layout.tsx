@@ -113,7 +113,7 @@ const TopBar = () => {
   return (
     <>
       <div className="flex h-14 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
-        {mangoAccount && mangoAccount.beingLiquidated ? (
+        {mangoAccount && mangoAccount?.beingLiquidated ? (
           <div className="flex items-center justify-center">
             <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-red" />
             <span className="text-th-red">{t('being-liquidated')}</span>
@@ -135,18 +135,18 @@ const TopBar = () => {
             </span>
             {connected || pubkey ? (
               !initialLoad && !loading ? (
-                mangoAccount ? (
+                true ? (
                   <div
                     className="default-transition flex items-center font-bold text-th-fgd-1 hover:text-th-fgd-3"
                     role="button"
                     onClick={() => setShowAccountsModal(true)}
                   >
                     {`${
-                      mangoAccount.name
-                        ? mangoAccount.name
-                        : abbreviateAddress(mangoAccount.publicKey)
+                      publicKey
+                        ? abbreviateAddress(publicKey)
+                        : null
                     }`}
-                    {publicKey && !mangoAccount.owner.equals(publicKey) ? (
+                    {publicKey  ? (
                       <Tooltip content={t('delegate:delegated-account')}>
                         <UsersIcon className="ml-2 h-5 w-5 text-th-fgd-3" />
                       </Tooltip>
@@ -174,7 +174,7 @@ const TopBar = () => {
         <div className="flex items-center space-x-4">
           {!isMobile && connected && !initialLoad ? (
             <div className="flex space-x-2">
-              {mangoAccount ? (
+              {true ? (
                 <Button
                   className="flex h-8 w-[86px] items-center justify-center pl-3 pr-3 text-xs"
                   onClick={() => setShowDepositModal(true)}
@@ -189,7 +189,7 @@ const TopBar = () => {
                   {t('create-account')}
                 </Button>
               )}
-              {canWithdraw ? (
+              {true ? (
                 <Button
                   className="flex h-8 w-[86px] items-center justify-center pl-3 pr-3 text-xs"
                   onClick={() => setShowWithdrawModal(true)}
@@ -229,6 +229,7 @@ const TopBar = () => {
       ) : null}
       {showWithdrawModal ? (
         <WithdrawModal
+        smwb={{}}
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
         />

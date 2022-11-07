@@ -65,11 +65,11 @@ export default function AccountOverview() {
 
   const mangoAccountValue = useMemo(() => {
     return mangoAccount && mangoGroup && mangoCache
-      ? +mangoAccount.computeValue(mangoGroup, mangoCache)
+      ? +mangoAccount?.computeValue(mangoGroup, mangoCache)
       : 0
   }, [mangoAccount, mangoGroup, mangoCache])
 
-  return mangoAccount ? (
+  return true ? (
     <>
       <div className="grid grid-cols-12 md:gap-x-6">
         <div className="relative col-span-12 h-[700px] md:h-[615px] lg:h-[430px] xl:h-[320px]">

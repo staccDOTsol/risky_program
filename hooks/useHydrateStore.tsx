@@ -138,7 +138,7 @@ const useHydrateStore = () => {
 
     const subscriptionId = connection.onAccountChange(
       // @ts-ignore
-      mangoAccount.publicKey,
+      mangoAccount?.publicKey,
       (info, context) => {
         if (info?.lamports === 0) return
 
@@ -158,12 +158,12 @@ const useHydrateStore = () => {
         if (Math.abs(timeDiff) >= 500 && context.slot > lastSeenSlot) {
           const decodedMangoAccount = MangoAccountLayout.decode(info?.data)
           const newMangoAccount = new MangoAccount(
-            mangoAccount.publicKey,
+            mangoAccount?.publicKey,
             decodedMangoAccount
           )
           newMangoAccount.spotOpenOrdersAccounts =
-            mangoAccount.spotOpenOrdersAccounts
-          newMangoAccount.advancedOrders = mangoAccount.advancedOrders
+            mangoAccount?.spotOpenOrdersAccounts
+          newMangoAccount.advancedOrders = mangoAccount?.advancedOrders
 
           setMangoStore((state) => {
             state.selectedMangoAccount.lastSlot = context.slot
@@ -187,7 +187,7 @@ const useHydrateStore = () => {
         try {
           const [referrerMemoryPk] = await PublicKey.findProgramAddress(
             [
-              mangoAccount.publicKey.toBytes(),
+              mangoAccount?.publicKey.toBytes(),
               new Buffer('ReferrerMemory', 'utf-8'),
             ],
             programId

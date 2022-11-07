@@ -62,10 +62,10 @@ const CloseAccountModal: FunctionComponent<CloseAccountModalProps> = ({
       return
     }
     const accountKeys = [
-      mangoAccount.publicKey,
-      ...mangoAccount.spotOpenOrders.filter((oo) => !oo.equals(zeroKey)),
-      ...(!mangoAccount.advancedOrdersKey.equals(zeroKey)
-        ? [mangoAccount.advancedOrdersKey]
+      mangoAccount?.publicKey,
+      ...mangoAccount?.spotOpenOrders.filter((oo) => !oo.equals(zeroKey)),
+      ...(!mangoAccount?.advancedOrdersKey.equals(zeroKey)
+        ? [mangoAccount?.advancedOrdersKey]
         : []),
     ]
     const accounts = await getMultipleAccounts(connection, accountKeys)
@@ -79,7 +79,7 @@ const CloseAccountModal: FunctionComponent<CloseAccountModalProps> = ({
 
   useEffect(() => {
     if (mangoAccount) {
-      if (mangoAccount.borrows.some((b) => b.gt(ZERO_I80F48))) {
+      if (mangoAccount?.borrows.some((b) => b.gt(ZERO_I80F48))) {
         setHasBorrows(true)
       }
       if (openPositions.length || unsettledPositions.length) {
@@ -92,7 +92,7 @@ const CloseAccountModal: FunctionComponent<CloseAccountModalProps> = ({
 
   const mngoAccrued = useMemo(() => {
     return mangoAccount
-      ? mangoAccount.perpAccounts.reduce((acc, perpAcct) => {
+      ? mangoAccount?.perpAccounts.reduce((acc, perpAcct) => {
           return perpAcct.mngoAccrued.add(acc)
         }, ZERO_BN)
       : ZERO_BN
@@ -191,12 +191,12 @@ const CloseAccountModal: FunctionComponent<CloseAccountModalProps> = ({
         {mangoAccount &&
         mangoGroup &&
         mangoCache &&
-        mangoAccount.getAssetsVal(mangoGroup, mangoCache).gt(ZERO_I80F48) ? (
+        mangoAccount?.getAssetsVal(mangoGroup, mangoCache).gt(ZERO_I80F48) ? (
           <div className="flex items-center text-th-fgd-2">
             <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-green" />
             {t('close-account:withdraw-assets-worth', {
               value: formatUsdValue(
-                +mangoAccount.computeValue(mangoGroup, mangoCache)
+                +mangoAccount?.computeValue(mangoGroup, mangoCache)
               ),
             })}
           </div>

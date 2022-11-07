@@ -224,7 +224,7 @@ export default function MarketPosition() {
 
   let perpAccount
   if (marketName.includes('PERP') && mangoAccount) {
-    perpAccount = mangoAccount.perpAccounts[marketIndex]
+    perpAccount = mangoAccount?.perpAccounts[marketIndex]
   }
 
   const handleSizeClick = (size) => {

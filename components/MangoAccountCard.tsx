@@ -31,20 +31,7 @@ const MangoAccountCard = ({
   return (
     <div>
       <p className="mb-1 flex items-center font-bold text-th-fgd-1">
-        {pnl ? (
-          <a
-            className="default-transition text-th-fgd-1 hover:text-th-fgd-3"
-            href={`https://trade.mango.markets/account?pubkey=${mangoAccount.publicKey.toString()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {mangoAccount?.name || abbreviateAddress(mangoAccount.publicKey)}
-          </a>
-        ) : (
-          <span>
-            {mangoAccount?.name || abbreviateAddress(mangoAccount.publicKey)}
-          </span>
-        )}
+        {null}
         {publicKey && !mangoAccount?.owner.equals(publicKey) ? (
           <Tooltip content={t('delegate:delegated-account')}>
             <UsersIcon className="ml-1.5 h-3 w-3 text-th-fgd-3" />
@@ -81,8 +68,8 @@ const AccountInfo = ({
   if (!mangoCache) {
     return null
   }
-  const accountEquity = mangoAccount.computeValue(mangoGroup, mangoCache)
-  const health = mangoAccount.getHealthRatio(mangoGroup, mangoCache, 'Maint')
+  const accountEquity = mangoAccount?.computeValue(mangoGroup, mangoCache)
+  const health = mangoAccount?.getHealthRatio(mangoGroup, mangoCache, 'Maint')
 
   return (
     <div className="flex items-center text-xs text-th-fgd-3">

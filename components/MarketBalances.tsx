@@ -79,7 +79,7 @@ export default function MarketBalances() {
               const tokenIndex = mangoGroup.getTokenIndex(mintKey)
               const balance = mangoAccount
                 ? nativeI80F48ToUi(
-                    mangoAccount.getNet(
+                    mangoAccount?.getNet(
                       mangoGroupCache.rootBankCache[tokenIndex],
                       tokenIndex
                     ),
@@ -88,7 +88,7 @@ export default function MarketBalances() {
                 : 0
               const availableBalance = mangoAccount
                 ? nativeI80F48ToUi(
-                    mangoAccount.getAvailableBalance(
+                    mangoAccount?.getAvailableBalance(
                       mangoGroup,
                       mangoGroupCache,
                       tokenIndex

@@ -319,7 +319,9 @@ export const WalletProvider: FC<WalletProviderProps> = ({
         connect,
         disconnect,
         sendTransaction,
+        // @ts-ignore
         signTransaction,
+        // @ts-ignore
         signAllTransactions,
         signMessage,
       }}

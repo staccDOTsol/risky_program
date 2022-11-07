@@ -57,7 +57,7 @@ export default function AccountHistory() {
 
   const mangoAccountPk = useMemo(() => {
     if (mangoAccount) {
-      return mangoAccount.publicKey.toString()
+      return mangoAccount?.publicKey.toString()
     }
   }, [mangoAccount])
 

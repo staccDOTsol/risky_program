@@ -56,12 +56,10 @@ const MangoAccountSelect = ({
       value={
         <div className="text-left">
           <p className="mb-0 font-bold text-th-fgd-2">
-            {selectedMangoAccount?.name
-              ? selectedMangoAccount.name
-              : t('account')}
+            {t('account')}
           </p>
           <p className="mb-0 text-xs">
-            {abbreviateAddress(selectedMangoAccount?.publicKey)}
+            {null}
           </p>
         </div>
       }

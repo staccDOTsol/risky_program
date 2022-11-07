@@ -43,7 +43,7 @@ const AccountsModal: FunctionComponent<AccountsModalProps> = ({
   const [, setLastAccountViewed] = useLocalStorageState(LAST_ACCOUNT_KEY)
 
   const handleMangoAccountChange = (mangoAccount: MangoAccount) => {
-    setLastAccountViewed(mangoAccount.publicKey.toString())
+    setLastAccountViewed(mangoAccount?.publicKey.toString())
     setMangoStore((state) => {
       state.selectedMangoAccount.current = mangoAccount
     })
@@ -198,8 +198,8 @@ const AccountInfo = ({
   if (!mangoCache) {
     return null
   }
-  const accountEquity = mangoAccount.computeValue(mangoGroup, mangoCache)
-  const health = mangoAccount.getHealthRatio(mangoGroup, mangoCache, 'Maint')
+  const accountEquity = mangoAccount?.computeValue(mangoGroup, mangoCache)
+  const health = mangoAccount?.getHealthRatio(mangoGroup, mangoCache, 'Maint')
 
   return (
     <div className="flex items-center text-xs text-th-fgd-3">

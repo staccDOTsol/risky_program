@@ -228,13 +228,13 @@ export default function RiskCalculator() {
       const spotDeposit =
         Number(
           mangoAccount && spotMarketConfig
-            ? mangoAccount.getUiDeposit(
+            ? mangoAccount?.getUiDeposit(
                 mangoCache.rootBankCache[spotMarketConfig.marketIndex],
                 mangoGroup,
                 spotMarketConfig.marketIndex
               )
             : mangoAccount && symbol === 'USDC'
-            ? mangoAccount.getUiDeposit(
+            ? mangoAccount?.getUiDeposit(
                 mangoCache.rootBankCache[QUOTE_INDEX],
                 mangoGroup,
                 QUOTE_INDEX
@@ -244,13 +244,13 @@ export default function RiskCalculator() {
       const spotBorrow =
         Number(
           mangoAccount && spotMarketConfig
-            ? mangoAccount.getUiBorrow(
+            ? mangoAccount?.getUiBorrow(
                 mangoCache.rootBankCache[spotMarketConfig.marketIndex],
                 mangoGroup,
                 spotMarketConfig.marketIndex
               )
             : mangoAccount && symbol === 'USDC'
-            ? mangoAccount.getUiBorrow(
+            ? mangoAccount?.getUiBorrow(
                 mangoCache.rootBankCache[QUOTE_INDEX],
                 mangoGroup,
                 QUOTE_INDEX
@@ -273,19 +273,19 @@ export default function RiskCalculator() {
       const spotQuoteTokenLocked =
         mangoAccount && spotMarketConfig && iQuoteTokenFree
           ? Number(
-              mangoAccount.spotOpenOrdersAccounts[i]?.quoteTokenTotal.sub(
+              mangoAccount?.spotOpenOrdersAccounts[i]?.quoteTokenTotal.sub(
                 iQuoteTokenFree
               )
             ) / Math.pow(10, 6) || 0
           : 0
       const spotBaseTokenFree =
         mangoAccount && spotMarketConfig
-          ? Number(mangoAccount.spotOpenOrdersAccounts[i]?.baseTokenFree) /
+          ? Number(mangoAccount?.spotOpenOrdersAccounts[i]?.baseTokenFree) /
               Math.pow(10, spotMarketConfig.baseDecimals) || 0
           : 0
       const spotQuoteTokenFree =
         mangoAccount && spotMarketConfig
-          ? Number(mangoAccount.spotOpenOrdersAccounts[i]?.quoteTokenFree) /
+          ? Number(mangoAccount?.spotOpenOrdersAccounts[i]?.quoteTokenFree) /
               Math.pow(10, 6) || 0
           : 0
       let inOrders = 0
@@ -646,7 +646,7 @@ export default function RiskCalculator() {
                 resetDeposit =
                   Number(
                     mangoAccount && spotMarketConfig
-                      ? mangoAccount.getUiDeposit(
+                      ? mangoAccount?.getUiDeposit(
                           mangoCache.rootBankCache[
                             spotMarketConfig.marketIndex
                           ],
@@ -654,7 +654,7 @@ export default function RiskCalculator() {
                           spotMarketConfig.marketIndex
                         )
                       : mangoAccount && asset.symbolName === 'USDC'
-                      ? mangoAccount.getUiDeposit(
+                      ? mangoAccount?.getUiDeposit(
                           mangoCache.rootBankCache[QUOTE_INDEX],
                           mangoGroup,
                           QUOTE_INDEX
@@ -664,7 +664,7 @@ export default function RiskCalculator() {
                 resetBorrow =
                   Number(
                     mangoAccount && spotMarketConfig
-                      ? mangoAccount.getUiBorrow(
+                      ? mangoAccount?.getUiBorrow(
                           mangoCache.rootBankCache[
                             spotMarketConfig.marketIndex
                           ],
@@ -672,7 +672,7 @@ export default function RiskCalculator() {
                           spotMarketConfig.marketIndex
                         )
                       : mangoAccount && asset.symbolName === 'USDC'
-                      ? mangoAccount.getUiBorrow(
+                      ? mangoAccount?.getUiBorrow(
                           mangoCache.rootBankCache[QUOTE_INDEX],
                           mangoGroup,
                           QUOTE_INDEX
@@ -906,7 +906,7 @@ export default function RiskCalculator() {
 
       equity = assets - liabilities
       if (equity > 0 && liabilities != 0) {
-        leverage = Math.abs(liabilities / equity)
+        leverage = 0//Math.abs(liabilities / equity)
       }
 
       // Calculate health ratios and risk ranking

@@ -71,11 +71,11 @@ export default function AccountInfo() {
 
   const equity =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.computeValue(mangoGroup, mangoCache)
+      ? mangoAccount?.computeValue(mangoGroup, mangoCache)
       : ZERO_I80F48
 
   const mngoAccrued = mangoAccount
-    ? mangoAccount.perpAccounts.reduce((acc, perpAcct) => {
+    ? mangoAccount?.perpAccounts.reduce((acc, perpAcct) => {
         return perpAcct.mngoAccrued.add(acc)
       }, ZERO_BN)
     : ZERO_BN
@@ -128,21 +128,21 @@ export default function AccountInfo() {
 
   const maintHealthRatio =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealthRatio(mangoGroup, mangoCache, 'Maint')
+      ? mangoAccount?.getHealthRatio(mangoGroup, mangoCache, 'Maint')
       : I80F48_100
 
   const maintHealth =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealth(mangoGroup, mangoCache, 'Maint')
+      ? mangoAccount?.getHealth(mangoGroup, mangoCache, 'Maint')
       : I80F48_100
   const initHealth =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealth(mangoGroup, mangoCache, 'Init')
+      ? mangoAccount?.getHealth(mangoGroup, mangoCache, 'Init')
       : I80F48_100
 
   const liquidationPrice =
     mangoGroup && mangoAccount && marketConfig && mangoGroup && mangoCache
-      ? mangoAccount.getLiquidationPrice(
+      ? mangoAccount?.getLiquidationPrice(
           mangoGroup,
           mangoCache,
           marketConfig.marketIndex
@@ -158,13 +158,13 @@ export default function AccountInfo() {
         id="account-details-tip"
       >
         {!isMobile ? (
-          mangoAccount ? (
+          true ? (
             <div className="flex items-center justify-between">
               <div className="h-8 w-8" />
               <ElementTitle>
                 <Tooltip
                   content={
-                    mangoAccount ? (
+                    true ? (
                       <div>
                         {t('init-health')}: {initHealth.toFixed(4)}
                         <br />
@@ -187,19 +187,7 @@ export default function AccountInfo() {
           )
         ) : null}
         <div>
-          {mangoAccount ? (
-            <div className="-mt-2 mb-2 flex justify-center text-xs">
-              <a
-                className="flex items-center text-th-fgd-4 hover:text-th-primary"
-                href={`https://explorer.solana.com/address/${mangoAccount?.publicKey}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {abbreviateAddress(mangoAccount.publicKey, 6)}
-                <ExternalLinkIcon className={`ml-1.5 h-4 w-4`} />
-              </a>
-            </div>
-          ) : null}
+          {null}
           <div>
             <div className="flex justify-between pb-2">
               <div className="font-normal leading-4 text-th-fgd-3">
@@ -281,7 +269,7 @@ export default function AccountInfo() {
                 {mangoAccount && mangoGroup && mangoCache
                   ? usdFormatter(
                       nativeI80F48ToUi(
-                        mangoAccount.getMarketMarginAvailable(
+                        mangoAccount?.getMarketMarginAvailable(
                           mangoGroup,
                           mangoCache,
                           marketConfig.marketIndex,
@@ -350,7 +338,7 @@ export default function AccountInfo() {
               </div>
             </div>
           </div>
-          {mangoAccount && mangoAccount.beingLiquidated ? (
+          {mangoAccount && mangoAccount?.beingLiquidated ? (
             <div className="flex items-center justify-center pt-0.5 text-xs">
               <ExclamationIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-red" />
               <span className="text-th-red">{t('being-liquidated')}</span>
@@ -379,6 +367,7 @@ export default function AccountInfo() {
       )}
       {showWithdrawModal && (
         <WithdrawModal
+          smwb={{}}
           isOpen={showWithdrawModal}
           onClose={handleCloseWithdraw}
         />

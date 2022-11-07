@@ -391,7 +391,6 @@ const JupiterForm: FunctionComponent = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          {abbreviateAddress(publicKey)}
                           <ExternalLinkIcon className="ml-0.5 -mt-0.5 h-3.5 w-3.5" />
                         </a>
                       ) : null}

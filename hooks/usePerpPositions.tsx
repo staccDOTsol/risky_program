@@ -34,7 +34,7 @@ export const collectPerpPosition = (
     return
 
   const perpMarketInfo = mangoGroup.perpMarkets[marketConfig.marketIndex]
-  const perpAccount = mangoAccount.perpAccounts[marketConfig.marketIndex]
+  const perpAccount = mangoAccount?.perpAccounts[marketConfig.marketIndex]
   const basePosition =
     perpMarket?.baseLotsToNumber(perpAccount.basePosition) +
     perpMarket.baseLotsToNumber(perpAccount.takerBase)

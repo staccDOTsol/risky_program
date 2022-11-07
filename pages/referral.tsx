@@ -226,7 +226,7 @@ export default function Referral() {
       </div>
       <div className="grid grid-flow-row grid-cols-12 gap-6">
         {connected ? (
-          mangoAccount ? (
+          true ? (
             <>
               {hasReferrals ? (
                 <div className="col-span-12">
@@ -274,11 +274,7 @@ export default function Referral() {
                                         <LinkIcon className="mr-1.5 h-4 w-4 flex-shrink-0" />
                                       ) : null}
                                       <p className="mb-0 max-w-md text-th-fgd-1">
-                                        {isMobile
-                                          ? abbreviateAddress(
-                                              mangoAccount.publicKey
-                                            )
-                                          : `https://trade.mango.markets?ref=${mangoAccount.publicKey.toString()}`}
+                                        {null}
                                       </p>
                                     </div>
                                   </Td>
@@ -290,7 +286,7 @@ export default function Referral() {
                                       disabled={typeof hasCopied === 'number'}
                                       onClick={() =>
                                         handleCopyLink(
-                                          `https://trade.mango.markets?ref=${mangoAccount.publicKey.toString()}`,
+                                          `https://trade.mango.markets?ref=${mangoAccount?.publicKey.toString()}`,
                                           1
                                         )
                                       }
@@ -496,9 +492,7 @@ export default function Referral() {
                                     shallow={true}
                                   >
                                     <a className="text-th-fgd-2 underline hover:text-th-fgd-3 hover:no-underline">
-                                      {abbreviateAddress(
-                                        mangoAccount.publicKey
-                                      )}
+                                      {null}
                                     </a>
                                   </Link>
                                 </div>

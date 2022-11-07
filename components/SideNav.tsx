@@ -84,7 +84,6 @@ const SideNav = ({ collapsed }) => {
           />
         </div>
       </div>
-      <AccountSummaryPanel collapsed={collapsed} />
     </div>
   )
 }
@@ -174,7 +173,7 @@ const AccountSummaryPanel = ({ collapsed }) => {
 
   const maintHealthRatio =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealthRatio(mangoGroup, mangoCache, 'Maint')
+      ? mangoAccount?.getHealthRatio(mangoGroup, mangoCache, 'Maint')
       : I80F48_100
 
   return (
@@ -187,9 +186,7 @@ const AccountSummaryPanel = ({ collapsed }) => {
             <p className="mb-0 whitespace-nowrap text-xs text-th-fgd-3">
               {t('account-summary')}
             </p>
-            <p className="mb-0 font-bold text-th-fgd-1">
-              {abbreviateAddress(mangoAccount.publicKey)}
-            </p>
+      
           </div>
         }
         hideIconBg

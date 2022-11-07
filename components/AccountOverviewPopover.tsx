@@ -27,26 +27,19 @@ const AccountOverviewPopover = ({
 
   const initHealth =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.getHealth(mangoGroup, mangoCache, 'Init')
+      ? mangoAccount?.getHealth(mangoGroup, mangoCache, 'Init')
       : I80F48_100
 
   const equity =
     mangoAccount && mangoGroup && mangoCache
-      ? mangoAccount.computeValue(mangoGroup, mangoCache)
+      ? mangoAccount?.computeValue(mangoGroup, mangoCache)
       : ZERO_I80F48
 
   return (
     <>
-      {mangoAccount ? (
+      {true ? (
         <div className={`w-full ${!collapsed ? 'px-2' : ''}`}>
-          {collapsed ? (
-            <div className="pb-2">
-              <p className="mb-0 text-xs text-th-fgd-3">{t('account')}</p>
-              <p className="mb-0 font-bold text-th-fgd-1">
-                {abbreviateAddress(mangoAccount.publicKey)}
-              </p>
-            </div>
-          ) : null}
+          { null}
           <div className="pb-2">
             <p className="mb-0 text-xs leading-4">{t('value')}</p>
             <p className="mb-0 font-bold text-th-fgd-1">
@@ -100,7 +93,7 @@ const AccountOverviewPopover = ({
               {mangoAccount && mangoGroup && mangoCache
                 ? usdFormatter(
                     nativeI80F48ToUi(
-                      mangoAccount.getMarketMarginAvailable(
+                      mangoAccount?.getMarketMarginAvailable(
                         mangoGroup,
                         mangoCache,
                         marketConfig.marketIndex,
