@@ -21,7 +21,7 @@ import { Table, Td, Th, TrBody, TrHead } from '../TableElements'
 import { ExpandableRow } from '../TableElements'
 import MobileTableHeader from '../mobile/MobileTableHeader'
 import { useTranslation } from 'next-i18next'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
@@ -461,7 +461,7 @@ export default function AccountBorrows() {
     (s) => s.selectedMangoAccount.initialLoad
   )
   const spotBalances = useMangoStore((s) => s.selectedMangoAccount.spotBalances)
-const connection = new Connection("https://solana-mainnet.g.alchemy.com/v2/1_5YWfzLWXOo_Y_Dm0s89VTlD5T_RKHn")
+const { connection } = useConnection()
   const [borrowSymbol, setBorrowSymbol] = useState('')
   const [smwb, setSmwb]: any = useState({})
 
