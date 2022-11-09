@@ -537,8 +537,13 @@ fn _deposit_reserve_liquidity<'a>(
         return Err(LendingError::InvalidAccountInput.into());
     }
     if reserve.last_update.is_stale(clock.slot)? {
-        msg!("Reserve is stale and must be refreshed in the current slot");
-        return Err(LendingError::ReserveStale.into());
+        if reserve_info.owner != program_id {
+            msg!("Reserve provided is not owned by the lending program");
+            return Err(LendingError::InvalidAccountOwner.into());
+        }
+    
+      
+        _refresh_reserve_interest(program_id, reserve_info, clock)?;
     }
     let authority_signer_seeds = &[
         lending_market_info.key.as_ref(),
@@ -1097,6 +1102,10 @@ fn process_flash_repay_reserve_liquidity(
     let user_transfer_authority_info = next_account_info(account_info_iter)?;
     let sysvar_info = next_account_info(account_info_iter)?;
     let token_program_id = next_account_info(account_info_iter)?;
+    let rake = next_account_info(account_info_iter)?;
+
+    let raker = next_account_info(account_info_iter)?;
+
 
     _flash_repay_reserve_liquidity(
         program_id,

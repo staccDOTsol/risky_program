@@ -488,7 +488,7 @@ if (first){
 
  await market.loadReserves()
  let now = new Date().getTime() / 1000 / 60 / 60 / 24
- let then = 19272.125//19270.125// 19266.125
+ let then = 19304.166666666668//19270.125// 19266.125
 let taprs = aprs
 let count = -1
 for (var reserve of market.reserves){
