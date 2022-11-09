@@ -796,7 +796,7 @@ setTimeout(async function(){})
                                         !canWithdraw
                                       }
                                     >
-                                      {t('borrow') }- do not deposit sol yet doesn&apos;t work ;) https://streamable.com/504wez
+                                      {t('borrow') }- a protocol that allows much much cheaper flashloans and incentivized deposits https://streamable.com/504wez
                                     </Button>
                                   </div>
                                 </>
