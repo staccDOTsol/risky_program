@@ -486,7 +486,6 @@ const WithdrawModal: FunctionComponent<WithdrawModalProps> = ({
   const [maxAmount, setMaxAmount] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [includeBorrow, setIncludeBorrow] = useState(borrow)
-  const [simulation, setSimulation] = useState<any | null>(null)
   const [showSimulation, setShowSimulation] = useState(false)
   const { wallet } = useWallet()
   const actions = useMangoStore((s) => s.actions)
@@ -505,88 +504,21 @@ const WithdrawModal: FunctionComponent<WithdrawModalProps> = ({
     () => tokens.find((t) => t.symbol === withdrawTokenSymbol),
     [withdrawTokenSymbol, tokens]
   )
-  const tokenIndex =
-    mangoGroup && token ? mangoGroup.getTokenIndex(token.mintKey) : 0
-  const marketMode =
-    mangoGroup && token
-      ? mangoGroup.tokens[tokenIndex].spotMarketMode
-      : MarketMode.Default
-  const isCloseOnly =
-    marketMode == MarketMode.CloseOnly ||
-    marketMode == MarketMode.ForceCloseOnly
-
   const initHealthRatio = 99999999
 
-  useEffect(() => {
-    if (
-      !mangoGroup ||
-      !withdrawMangoAccount ||
-      !withdrawTokenSymbol ||
-      !mangoCache
-    )
-      return
-    const mintDecimals = mangoGroup.tokens[tokenIndex].decimals
-    const tokenDeposits = withdrawMangoAccount?.getUiDeposit(
-      mangoCache.rootBankCache[tokenIndex],
-      mangoGroup,
-      tokenIndex
-    )
-    const tokenBorrows = withdrawMangoAccount?.getUiBorrow(
-      mangoCache.rootBankCache[tokenIndex],
-      mangoGroup,
-      tokenIndex
-    )
-    console.log(tokenSymbol)
-
-    const maxWithBorrows = withdrawMangoAccount
-    .getMaxWithBorrowForToken(mangoGroup, mangoCache, tokenIndex)
-    .add(maxWithoutBorrows)
-    .mul(I80F48.fromString('0.995')) // handle rounding errors when borrowing
-    if (isCloseOnly) {
-      setIncludeBorrow(false)
-    }
-    // get max withdraw amount
-    let maxWithdraw = maxWithoutBorrows
-    if (includeBorrow) {
-      maxWithdraw = maxWithoutBorrows.gt(maxWithBorrows)
-        ? maxWithoutBorrows
-        : maxWithBorrows
-    }
-
-   
-      setMaxAmount((smwb[tokenSymbol]))
+  const tokenIndex =
+    mangoGroup && token ? mangoGroup.getTokenIndex(token.mintKey) : 0
+   useEffect(()=> {
+    
+    setMaxAmount((smwb[tokenSymbol]))
+   }
+   , [token])
   
-    // simulate change to deposits & borrow based on input amount
-    const parsedInputAmount = inputAmount
-      ? I80F48.fromString(inputAmount)
-      : ZERO_I80F48
-    let newDeposit = tokenDeposits.sub(parsedInputAmount)
-    newDeposit = newDeposit.gt(ZERO_I80F48) ? newDeposit : ZERO_I80F48
-
-    let newBorrow = parsedInputAmount.sub(tokenDeposits)
-    newBorrow = newBorrow.gt(ZERO_I80F48) ? newBorrow : ZERO_I80F48
-    newBorrow = newBorrow.add(tokenBorrows)
 
     // clone MangoAccount and arrays to not modify selectedMangoAccount
     // FIXME: MangoAccount needs type updated to accept null for pubKey
     // @ts-ignore
     const simulation = new MangoAccount(null, withdrawMangoAccount)
-    simulation.deposits = [...withdrawMangoAccount?.deposits]
-    simulation.borrows = [...withdrawMangoAccount?.borrows]
-
-    // update with simulated values
-    simulation.deposits[tokenIndex] = newDeposit
-      .mul(I80F48.fromNumber(Math.pow(10, mintDecimals)))
-      .div(mangoCache.rootBankCache[tokenIndex].depositIndex)
-    simulation.borrows[tokenIndex] = newBorrow
-      .mul(I80F48.fromNumber(Math.pow(10, mintDecimals)))
-      .div(mangoCache.rootBankCache[tokenIndex].borrowIndex)
-
-    const liabsVal = simulation
-      .getLiabsVal(mangoGroup, mangoCache, 'Init')
-      .toNumber()
-    const equity = simulation.computeValue(mangoGroup, mangoCache).toNumber()
-    const initHealthRatio = 88888888// simulation
     //.getHealthRatio(mangoGroup, mangoCache, 'Maint')
    // .toNumber()
 
@@ -595,22 +527,6 @@ const WithdrawModal: FunctionComponent<WithdrawModalProps> = ({
      // .toNumber()
 
     const leverage = 0//simulation.getLeverage(mangoGroup, mangoCache).toNumber()
-
-    setSimulation({
-      equity,
-      initHealthRatio,
-      leverage,
-      liabsVal,
-      maintHealthRatio,
-    })
-  }, [
-    includeBorrow,
-    inputAmount,
-    tokenIndex,
-    withdrawMangoAccount,
-    mangoGroup,
-    mangoCache,
-  ])
 
   const handleWithdraw =  async () => {
     console.log(1)
@@ -765,11 +681,6 @@ let res = config.markets[0].reserves.find(
    
   }
 
-  useEffect(() => {
-    if (simulation && simulation.initHealthRatio < 0 && includeBorrow) {
-      setInvalidAmountMessage(t('leverage-too-high'))
-    }
-  }, [simulation])
 
   const getTokenBalances = () => {
     const mangoCache = useMangoStore.getState().selectedMangoGroup.cache
@@ -777,7 +688,6 @@ let res = config.markets[0].reserves.find(
 
     if (mangoGroup && mangoCache) {
       return tokens.map((token) => {
-        const tokenIndex = mangoGroup.getTokenIndex(token.mintKey)
         return {
           symbol: token.symbol,
           balance: smwb[token.symbol],
@@ -901,12 +811,12 @@ let res = config.markets[0].reserves.find(
                   <p className="mb-0">{t('tooltip-projected-health')}</p>
                   <p
                     className={`mb-0 font-bold text-th-fgd-1 ${getAccountStatusColor(
-                      simulation.maintHealthRatio
+                      maintHealthRatio
                     )}`}
                   >
-                    {simulation.maintHealthRatio > 100
+                    {maintHealthRatio > 100
                       ? '>100'
-                      : simulation.maintHealthRatio.toFixed(2)}
+                      : maintHealthRatio.toFixed(2)}
                     %
                   </p>
                 </div>
@@ -914,10 +824,10 @@ let res = config.markets[0].reserves.find(
                   <p className="mb-0">{t('tooltip-projected-leverage')}</p>
                   <p
                     className={`mb-0 font-bold text-th-fgd-1 ${getAccountStatusColor(
-                      simulation.maintHealthRatio
+                      maintHealthRatio
                     )}`}
                   >
-                    {simulation.leverage.toFixed(2)}x
+                    {leverage.toFixed(2)}x
                   </p>
                 </div>
               </div>
@@ -951,7 +861,7 @@ let res = config.markets[0].reserves.find(
                 {t('confirm-withdraw')}
               </ElementTitle>
             </Modal.Header>
-            {simulation.initHealthRatio < 0 ? (
+            {initHealthRatio < 0 ? (
               <div className="pb-2">
                 <InlineNotification type="error" desc={t('prices-changed')} />
               </div>
@@ -981,7 +891,7 @@ let res = config.markets[0].reserves.find(
                 onClick={handleWithdraw}
                 disabled={
                   Number(inputAmount) <= 0 ||
-                  simulation.initHealthRatio < 0 ||
+                  initHealthRatio < 0 ||
                   submitting
                 }
                 className="w-full"
