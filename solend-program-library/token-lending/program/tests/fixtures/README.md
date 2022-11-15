@@ -3,7 +3,7 @@
 ### SOL / SRM Aggregator Accounts
 
 ```shell
-solana config set --url https://api.devnet.solana.com
+solana config set --url https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L
 
 # Pyth product: SOL/USD
 solana account 3Mnn2fX6rQyUsyELYms1sBJyChWofzSNRoqYzvgMVz5E --output-file 3Mnn2fX6rQyUsyELYms1sBJyChWofzSNRoqYzvgMVz5E.bin

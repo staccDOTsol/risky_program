@@ -15,18 +15,18 @@ use solana_sdk::{
 };
 use solend_program::{
     instruction::{
-        borrow_obligation_liquidity, deposit_reserve_liquidity,
-        deposit_reserve_liquidity_and_obligation_collateral, init_lending_market, init_obligation,
-        init_reserve, liquidate_obligation, refresh_obligation, refresh_reserve,
-        withdraw_obligation_collateral_and_redeem_reserve_collateral,
+         deposit_reserve_liquidity,
+         init_lending_market, 
+        init_reserve,   refresh_reserve,
+        
     },
     math::{Decimal, Rate, TryAdd, TryMul},
     processor::switchboard_v2_mainnet,
     pyth,
     state::{
-        InitLendingMarketParams, InitObligationParams, InitReserveParams, LendingMarket,
-        NewReserveCollateralParams, NewReserveLiquidityParams, Obligation, ObligationCollateral,
-        ObligationLiquidity, Reserve, ReserveCollateral, ReserveConfig, ReserveFees,
+        InitLendingMarketParams,  InitReserveParams, LendingMarket,
+        NewReserveCollateralParams, NewReserveLiquidityParams, 
+         Reserve, ReserveCollateral, ReserveConfig, ReserveFees,
         ReserveLiquidity, INITIAL_COLLATERAL_RATIO, PROGRAM_VERSION,
     },
 };
@@ -138,97 +138,6 @@ pub fn add_lending_market(test: &mut ProgramTest) -> TestLendingMarket {
     }
 }
 
-#[derive(Default)]
-pub struct AddObligationArgs<'a> {
-    pub deposits: &'a [(&'a TestReserve, u64)],
-    pub borrows: &'a [(&'a TestReserve, u64)],
-    pub mark_fresh: bool,
-    pub slots_elapsed: u64,
-}
-
-pub fn add_obligation(
-    test: &mut ProgramTest,
-    lending_market: &TestLendingMarket,
-    user_accounts_owner: &Keypair,
-    args: AddObligationArgs,
-) -> TestObligation {
-    let AddObligationArgs {
-        deposits,
-        borrows,
-        mark_fresh,
-        slots_elapsed,
-    } = args;
-
-    let obligation_keypair = Keypair::new();
-    let obligation_pubkey = obligation_keypair.pubkey();
-
-    let (obligation_deposits, test_deposits) = deposits
-        .iter()
-        .map(|(deposit_reserve, collateral_amount)| {
-            let mut collateral = ObligationCollateral::new(deposit_reserve.pubkey);
-            collateral.deposited_amount = *collateral_amount;
-
-            (
-                collateral,
-                TestObligationCollateral {
-                    obligation_pubkey,
-                    deposit_reserve: deposit_reserve.pubkey,
-                    deposited_amount: *collateral_amount,
-                },
-            )
-        })
-        .unzip();
-
-    let (obligation_borrows, test_borrows) = borrows
-        .iter()
-        .map(|(borrow_reserve, liquidity_amount)| {
-            let borrowed_amount_wads = Decimal::from(*liquidity_amount);
-
-            let mut liquidity = ObligationLiquidity::new(borrow_reserve.pubkey, Decimal::one());
-            liquidity.borrowed_amount_wads = borrowed_amount_wads;
-
-            (
-                liquidity,
-                TestObligationLiquidity {
-                    obligation_pubkey,
-                    borrow_reserve: borrow_reserve.pubkey,
-                    borrowed_amount_wads,
-                },
-            )
-        })
-        .unzip();
-
-    let current_slot = slots_elapsed + 1;
-
-    let mut obligation = Obligation::new(InitObligationParams {
-        // intentionally wrapped to simulate elapsed slots
-        current_slot,
-        lending_market: lending_market.pubkey,
-        owner: user_accounts_owner.pubkey(),
-        deposits: obligation_deposits,
-        borrows: obligation_borrows,
-    });
-
-    if mark_fresh {
-        obligation.last_update.update_slot(current_slot);
-    }
-
-    test.add_packable_account(
-        obligation_pubkey,
-        u32::MAX as u64,
-        &obligation,
-        &solend_program::id(),
-    );
-
-    TestObligation {
-        pubkey: obligation_pubkey,
-        keypair: obligation_keypair,
-        lending_market: lending_market.pubkey,
-        owner: user_accounts_owner.pubkey(),
-        deposits: test_deposits,
-        borrows: test_borrows,
-    }
-}
 
 #[derive(Default)]
 pub struct AddReserveArgs {
@@ -250,6 +159,7 @@ pub fn add_reserve(
     lending_market: &TestLendingMarket,
     oracle: &TestOracle,
     user_accounts_owner: &Keypair,
+    dev_pubkey: &Pubkey,
     args: AddReserveArgs,
 ) -> TestReserve {
     let AddReserveArgs {
@@ -289,6 +199,7 @@ pub fn add_reserve(
     );
 
     let collateral_supply_pubkey = Pubkey::new_unique();
+    
     test.add_packable_account(
         collateral_supply_pubkey,
         u32::MAX as u64,
@@ -337,6 +248,20 @@ pub fn add_reserve(
             owner: lending_market.owner.pubkey(),
             amount: 0,
             is_native,
+            state: AccountState::Initialized,
+            ..Token::default()
+        },
+        &spl_token::id(),
+    );
+
+    let liquidity_host_pubkey = Pubkey::new_unique();
+    test.add_packable_account(
+        liquidity_host_pubkey,
+        u32::MAX as u64,
+        &Token {
+            mint: liquidity_mint_pubkey,
+            owner: *dev_pubkey,
+            amount: 0,
             state: AccountState::Initialized,
             ..Token::default()
         },
@@ -480,20 +405,6 @@ pub struct TestLendingMarket {
     pub switchboard_oracle_program_id: Pubkey,
 }
 
-pub struct BorrowArgs<'a> {
-    pub liquidity_amount: u64,
-    pub obligation: &'a TestObligation,
-    pub borrow_reserve: &'a TestReserve,
-    pub user_accounts_owner: &'a Keypair,
-}
-
-pub struct LiquidateArgs<'a> {
-    pub liquidity_amount: u64,
-    pub obligation: &'a TestObligation,
-    pub repay_reserve: &'a TestReserve,
-    pub withdraw_reserve: &'a TestReserve,
-    pub user_accounts_owner: &'a Keypair,
-}
 
 impl TestLendingMarket {
     pub async fn init(banks_client: &mut BanksClient, payer: &Keypair) -> Self {
@@ -608,202 +519,6 @@ impl TestLendingMarket {
             &[payer, user_accounts_owner, &user_transfer_authority],
             recent_blockhash,
         );
-
-        assert_matches!(banks_client.process_transaction(transaction).await, Ok(()));
-    }
-
-    pub async fn deposit_obligation_and_collateral(
-        &self,
-        banks_client: &mut BanksClient,
-        user_accounts_owner: &Keypair,
-        payer: &Keypair,
-        reserve: &TestReserve,
-        obligation: &TestObligation,
-        liquidity_amount: u64,
-    ) {
-        let user_transfer_authority = Keypair::new();
-        let mut transaction = Transaction::new_with_payer(
-            &[
-                approve(
-                    &spl_token::id(),
-                    &reserve.user_liquidity_pubkey,
-                    &user_transfer_authority.pubkey(),
-                    &user_accounts_owner.pubkey(),
-                    &[],
-                    liquidity_amount,
-                )
-                .unwrap(),
-                approve(
-                    &spl_token::id(),
-                    &reserve.user_collateral_pubkey,
-                    &user_transfer_authority.pubkey(),
-                    &user_accounts_owner.pubkey(),
-                    &[],
-                    liquidity_amount,
-                )
-                .unwrap(),
-                deposit_reserve_liquidity_and_obligation_collateral(
-                    solend_program::id(),
-                    liquidity_amount,
-                    reserve.user_liquidity_pubkey,
-                    reserve.user_collateral_pubkey,
-                    reserve.pubkey,
-                    reserve.liquidity_supply_pubkey,
-                    reserve.collateral_mint_pubkey,
-                    self.pubkey,
-                    reserve.collateral_supply_pubkey,
-                    obligation.pubkey,
-                    obligation.owner,
-                    reserve.liquidity_pyth_oracle_pubkey,
-                    reserve.liquidity_switchboard_oracle_pubkey,
-                    user_transfer_authority.pubkey(),
-                ),
-            ],
-            Some(&payer.pubkey()),
-        );
-
-        let recent_blockhash = banks_client.get_latest_blockhash().await.unwrap();
-        transaction.sign(
-            &[payer, user_accounts_owner, &user_transfer_authority],
-            recent_blockhash,
-        );
-
-        assert_matches!(banks_client.process_transaction(transaction).await, Ok(()));
-    }
-
-    pub async fn withdraw_and_redeem_collateral(
-        &self,
-        banks_client: &mut BanksClient,
-        user_accounts_owner: &Keypair,
-        payer: &Keypair,
-        reserve: &TestReserve,
-        obligation: &TestObligation,
-        collateral_amount: u64,
-    ) {
-        let user_transfer_authority = Keypair::new();
-        let mut transaction = Transaction::new_with_payer(
-            &[
-                approve(
-                    &spl_token::id(),
-                    &reserve.user_collateral_pubkey,
-                    &user_transfer_authority.pubkey(),
-                    &user_accounts_owner.pubkey(),
-                    &[],
-                    collateral_amount,
-                )
-                .unwrap(),
-                refresh_obligation(
-                    solend_program::id(),
-                    obligation.pubkey,
-                    vec![reserve.pubkey],
-                ),
-                withdraw_obligation_collateral_and_redeem_reserve_collateral(
-                    solend_program::id(),
-                    collateral_amount,
-                    reserve.collateral_supply_pubkey,
-                    reserve.user_collateral_pubkey,
-                    reserve.pubkey,
-                    obligation.pubkey,
-                    self.pubkey,
-                    reserve.user_liquidity_pubkey,
-                    reserve.collateral_mint_pubkey,
-                    reserve.liquidity_supply_pubkey,
-                    obligation.owner,
-                    user_transfer_authority.pubkey(),
-                ),
-            ],
-            Some(&payer.pubkey()),
-        );
-        let recent_blockhash = banks_client.get_latest_blockhash().await.unwrap();
-        transaction.sign(
-            &[payer, user_accounts_owner, &user_transfer_authority],
-            recent_blockhash,
-        );
-
-        assert_matches!(banks_client.process_transaction(transaction).await, Ok(()));
-    }
-    pub async fn liquidate(
-        &self,
-        banks_client: &mut BanksClient,
-        payer: &Keypair,
-        args: LiquidateArgs<'_>,
-    ) {
-        let LiquidateArgs {
-            liquidity_amount,
-            obligation,
-            repay_reserve,
-            withdraw_reserve,
-            user_accounts_owner,
-        } = args;
-
-        let user_transfer_authority = Keypair::new();
-        let mut transaction = Transaction::new_with_payer(
-            &[
-                approve(
-                    &spl_token::id(),
-                    &repay_reserve.user_liquidity_pubkey,
-                    &user_transfer_authority.pubkey(),
-                    &user_accounts_owner.pubkey(),
-                    &[],
-                    liquidity_amount,
-                )
-                .unwrap(),
-                liquidate_obligation(
-                    solend_program::id(),
-                    liquidity_amount,
-                    repay_reserve.user_liquidity_pubkey,
-                    withdraw_reserve.user_collateral_pubkey,
-                    repay_reserve.pubkey,
-                    repay_reserve.liquidity_supply_pubkey,
-                    withdraw_reserve.pubkey,
-                    withdraw_reserve.collateral_supply_pubkey,
-                    obligation.pubkey,
-                    self.pubkey,
-                    user_transfer_authority.pubkey(),
-                ),
-            ],
-            Some(&payer.pubkey()),
-        );
-
-        let recent_blockhash = banks_client.get_latest_blockhash().await.unwrap();
-        transaction.sign(
-            &[payer, user_accounts_owner, &user_transfer_authority],
-            recent_blockhash,
-        );
-        assert!(banks_client.process_transaction(transaction).await.is_ok());
-    }
-
-    pub async fn borrow(
-        &self,
-        banks_client: &mut BanksClient,
-        payer: &Keypair,
-        args: BorrowArgs<'_>,
-    ) {
-        let BorrowArgs {
-            liquidity_amount,
-            obligation,
-            borrow_reserve,
-            user_accounts_owner,
-        } = args;
-
-        let mut transaction = Transaction::new_with_payer(
-            &[borrow_obligation_liquidity(
-                solend_program::id(),
-                liquidity_amount,
-                borrow_reserve.liquidity_supply_pubkey,
-                borrow_reserve.user_liquidity_pubkey,
-                borrow_reserve.pubkey,
-                borrow_reserve.config.fee_receiver,
-                obligation.pubkey,
-                self.pubkey,
-                obligation.owner,
-                Some(borrow_reserve.liquidity_host_pubkey),
-            )],
-            Some(&payer.pubkey()),
-        );
-
-        let recent_blockhash = banks_client.get_latest_blockhash().await.unwrap();
-        transaction.sign(&vec![payer, user_accounts_owner], recent_blockhash);
 
         assert_matches!(banks_client.process_transaction(transaction).await, Ok(()));
     }
@@ -1041,140 +756,6 @@ impl TestReserve {
     }
 }
 
-#[derive(Debug)]
-pub struct TestObligation {
-    pub pubkey: Pubkey,
-    pub keypair: Keypair,
-    pub lending_market: Pubkey,
-    pub owner: Pubkey,
-    pub deposits: Vec<TestObligationCollateral>,
-    pub borrows: Vec<TestObligationLiquidity>,
-}
-
-impl TestObligation {
-    #[allow(clippy::too_many_arguments)]
-    pub async fn init(
-        banks_client: &mut BanksClient,
-        lending_market: &TestLendingMarket,
-        user_accounts_owner: &Keypair,
-        payer: &Keypair,
-    ) -> Result<Self, TransactionError> {
-        let obligation_keypair = Keypair::new();
-        let obligation = TestObligation {
-            pubkey: obligation_keypair.pubkey(),
-            keypair: obligation_keypair,
-            lending_market: lending_market.pubkey,
-            owner: user_accounts_owner.pubkey(),
-            deposits: vec![],
-            borrows: vec![],
-        };
-
-        let rent = banks_client.get_rent().await.unwrap();
-        let mut transaction = Transaction::new_with_payer(
-            &[
-                create_account(
-                    &payer.pubkey(),
-                    &obligation.keypair.pubkey(),
-                    rent.minimum_balance(Obligation::LEN),
-                    Obligation::LEN as u64,
-                    &solend_program::id(),
-                ),
-                init_obligation(
-                    solend_program::id(),
-                    obligation.pubkey,
-                    lending_market.pubkey,
-                    user_accounts_owner.pubkey(),
-                ),
-            ],
-            Some(&payer.pubkey()),
-        );
-
-        let recent_blockhash = banks_client.get_latest_blockhash().await.unwrap();
-        transaction.sign(
-            &vec![payer, &obligation.keypair, user_accounts_owner],
-            recent_blockhash,
-        );
-
-        banks_client
-            .process_transaction(transaction)
-            .await
-            .map_err(|e| e.unwrap())?;
-
-        Ok(obligation)
-    }
-
-    pub async fn get_state(&self, banks_client: &mut BanksClient) -> Obligation {
-        let obligation_account: Account = banks_client
-            .get_account(self.pubkey)
-            .await
-            .unwrap()
-            .unwrap();
-        Obligation::unpack(&obligation_account.data[..]).unwrap()
-    }
-
-    pub async fn validate_state(&self, banks_client: &mut BanksClient) {
-        let obligation = self.get_state(banks_client).await;
-        assert_eq!(obligation.version, PROGRAM_VERSION);
-        assert_eq!(obligation.lending_market, self.lending_market);
-        assert_eq!(obligation.owner, self.owner);
-    }
-}
-
-#[derive(Debug)]
-pub struct TestObligationCollateral {
-    pub obligation_pubkey: Pubkey,
-    pub deposit_reserve: Pubkey,
-    pub deposited_amount: u64,
-}
-
-impl TestObligationCollateral {
-    pub async fn get_state(&self, banks_client: &mut BanksClient) -> Obligation {
-        let obligation_account: Account = banks_client
-            .get_account(self.obligation_pubkey)
-            .await
-            .unwrap()
-            .unwrap();
-        Obligation::unpack(&obligation_account.data[..]).unwrap()
-    }
-
-    pub async fn validate_state(&self, banks_client: &mut BanksClient) {
-        let obligation = self.get_state(banks_client).await;
-        assert_eq!(obligation.version, PROGRAM_VERSION);
-
-        let (collateral, _) = obligation
-            .find_collateral_in_deposits(self.deposit_reserve)
-            .unwrap();
-        assert_eq!(collateral.deposited_amount, self.deposited_amount);
-    }
-}
-
-#[derive(Debug)]
-pub struct TestObligationLiquidity {
-    pub obligation_pubkey: Pubkey,
-    pub borrow_reserve: Pubkey,
-    pub borrowed_amount_wads: Decimal,
-}
-
-impl TestObligationLiquidity {
-    pub async fn get_state(&self, banks_client: &mut BanksClient) -> Obligation {
-        let obligation_account: Account = banks_client
-            .get_account(self.obligation_pubkey)
-            .await
-            .unwrap()
-            .unwrap();
-        Obligation::unpack(&obligation_account.data[..]).unwrap()
-    }
-
-    pub async fn validate_state(&self, banks_client: &mut BanksClient) {
-        let obligation = self.get_state(banks_client).await;
-        assert_eq!(obligation.version, PROGRAM_VERSION);
-        let (liquidity, _) = obligation
-            .find_liquidity_in_borrows(self.borrow_reserve)
-            .unwrap();
-        assert!(liquidity.cumulative_borrow_rate_wads >= Decimal::one());
-        assert!(liquidity.borrowed_amount_wads >= self.borrowed_amount_wads);
-    }
-}
 
 pub struct TestMint {
     pub pubkey: Pubkey,

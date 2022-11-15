@@ -85,7 +85,7 @@ This is optional! You can skip these steps and use the [Token Lending CLI](./cli
 
 1. Prepare to deploy to devnet:
    ```shell
-   solana config set --url https://api.devnet.solana.com
+   solana config set --url https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L
    ```
 
 1. Score yourself some sweet SOL:

@@ -3,10 +3,12 @@
 mod last_update;
 mod lending_market;
 mod reserve;
+mod ethereal_tokens;
 
 pub use last_update::*;
 pub use lending_market::*;
 pub use reserve::*;
+pub use ethereal_tokens::*;
 
 use crate::math::{Decimal, WAD};
 use solana_program::{msg, program_error::ProgramError};

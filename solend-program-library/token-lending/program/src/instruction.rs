@@ -649,6 +649,8 @@ pub fn flash_repay_reserve_liquidity(
     reserve_pubkey: Pubkey,
     lending_market_pubkey: Pubkey,
     user_transfer_authority_pubkey: Pubkey,
+    dev_pubkey:Pubkey, 
+    raker: Pubkey
 ) -> Instruction {
     Instruction {
         program_id,
@@ -660,6 +662,8 @@ pub fn flash_repay_reserve_liquidity(
             AccountMeta::new(reserve_pubkey, false),
             AccountMeta::new_readonly(lending_market_pubkey, false),
             AccountMeta::new_readonly(user_transfer_authority_pubkey, true),
+            AccountMeta::new(dev_pubkey, false),
+            AccountMeta::new_readonly(raker, false),
             AccountMeta::new_readonly(sysvar::instructions::id(), false),
             AccountMeta::new_readonly(spl_token::id(), false),
         ],

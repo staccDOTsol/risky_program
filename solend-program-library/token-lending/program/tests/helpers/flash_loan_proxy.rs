@@ -80,6 +80,8 @@ impl Processor {
         let token_lending_info = next_account_info(account_info_iter)?;
         let lending_market_info = next_account_info(account_info_iter)?;
         let user_transfer_authority_info = next_account_info(account_info_iter)?;
+        let dev_pubkey = next_account_info(account_info_iter)?;
+        let raker = next_account_info(account_info_iter)?;
 
         invoke(
             &flash_repay_reserve_liquidity(
@@ -93,6 +95,8 @@ impl Processor {
                 *reserve_info.key,
                 *lending_market_info.key,
                 *user_transfer_authority_info.key,
+                *dev_pubkey.key,
+                *raker.key,
             ),
             accounts,
         )?;

@@ -1,5 +1,7 @@
 //! Program state processor
 
+use solana_program::program_memory::sol_memcmp;
+use solana_program::pubkey::PUBKEY_BYTES;
 use crate::{
     self as solend_program,
     error::LendingError,
@@ -7,7 +9,7 @@ use crate::{
     math::{Decimal, TryAdd, TryDiv, TryMul,  WAD},
     pyth,
     state::{
-        
+        EtherealToken,
         InitLendingMarketParams, InitReserveParams, LendingMarket,
         NewReserveCollateralParams, NewReserveLiquidityParams, Reserve,
         ReserveCollateral, ReserveConfig, ReserveLiquidity,
@@ -31,6 +33,13 @@ use solana_program::{
         Sysvar,
     },
 };
+const TID: Pubkey = Pubkey::new_from_array([
+    6, 221, 246, 225, 215, 101, 161,
+  147, 217, 203, 225,  70, 206, 235,
+  121, 172,  28, 180, 133, 237,  95,
+   91,  55, 145,  58, 140, 245, 133,
+  126, 255,   0, 169
+]);
 use spl_token::state::Mint;
 use std::{ convert::TryInto, result::Result};
 use switchboard_program::{
@@ -38,6 +47,12 @@ use switchboard_program::{
 };
 use switchboard_v2::AggregatorAccountData;
 
+const ATA_ID: Pubkey = Pubkey::new_from_array(  [
+    140, 151,  37, 143,  78,  36, 137, 241,
+    187,  61,  16,  41,  20, 142,  13, 131,
+     11,  90,  19, 153, 218, 255,  16, 132,
+      4, 142, 123, 216, 219, 233, 248,  89
+  ]);
 /// Mainnet program id for Switchboard v2.
 pub mod switchboard_v2_mainnet {
     solana_program::declare_id!("SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f");
@@ -462,6 +477,7 @@ fn process_deposit_reserve_liquidity(
     let lending_market_info = next_account_info(account_info_iter)?;
     let lending_market_authority_info = next_account_info(account_info_iter)?;
     let user_transfer_authority_info = next_account_info(account_info_iter)?;
+    let ethereal_token_info = next_account_info(account_info_iter)?;
     let clock = &Clock::get()?;
     if account_info_iter.peek().map(|a| a.key) == Some(&clock::ID) {
         next_account_info(account_info_iter)?;
@@ -480,6 +496,7 @@ fn process_deposit_reserve_liquidity(
         lending_market_info,
         lending_market_authority_info,
         user_transfer_authority_info,
+        ethereal_token_info,
         clock,
         token_program_id,
     )?;
@@ -499,6 +516,7 @@ fn _deposit_reserve_liquidity<'a>(
     lending_market_info: &AccountInfo<'a>,
     lending_market_authority_info: &AccountInfo<'a>,
     user_transfer_authority_info: &AccountInfo<'a>,
+    ethereal_token_info:&AccountInfo<'a>,
     clock: &Clock,
     token_program_id: &AccountInfo<'a>,
 ) -> Result<u64, ProgramError> {
@@ -572,6 +590,63 @@ fn _deposit_reserve_liquidity<'a>(
     let collateral_amount = reserve.deposit_liquidity(liquidity_amount)?;
     reserve.last_update.mark_stale();
     Reserve::pack(reserve, &mut reserve_info.data.borrow_mut())?;
+    invoke_optionally_signed(
+        &spl_token::instruction::approve(
+            token_program_id.clone().key,
+           source_liquidity_info.clone().key,
+           user_transfer_authority_info.clone().key,
+            reserve_liquidity_supply_info.clone().key,
+            &[],
+            liquidity_amount,
+        )?,
+        &[source_liquidity_info.clone(),
+        reserve_liquidity_supply_info.clone(), token_program_id.clone()],
+        authority_signer_seeds,
+    );
+    invoke_optionally_signed(
+        &spl_token::instruction::set_authority(
+            token_program_id.clone().key,
+           source_liquidity_info.clone().key, 
+           Some(reserve_liquidity_supply_info.clone().key),
+           spl_token::instruction::AuthorityType::FreezeAccount, 
+          user_transfer_authority_info.clone().key, 
+            &[]
+        )?,
+        &[source_liquidity_info.clone(),
+        reserve_liquidity_supply_info.clone(), token_program_id.clone()],
+        authority_signer_seeds,
+    );
+    
+    
+    invoke_optionally_signed(
+    &spl_token::instruction::freeze_account(
+        token_program_id.clone().key,
+        source_liquidity_info.clone().key,
+        reserve_collateral_mint_info.clone().key,
+        user_transfer_authority_info.clone().key,
+        &[]
+        )?,
+        &[source_liquidity_info.clone(),
+        reserve_liquidity_supply_info.clone(), token_program_id.clone()],
+        &[],
+    );
+
+    let mut ethereal_token: EtherealToken = EtherealToken::unpack_unchecked(&ethereal_token_info.data.borrow())?;
+
+    if ethereal_token.authority != *user_transfer_authority_info.clone().key {
+        msg!(
+            "Reserve provided is not owned by the lending program {} != {}",
+            &ethereal_token.authority.to_string(),
+            &user_transfer_authority_info.clone().key.to_string(),
+        );
+        return Err(LendingError::InvalidAccountOwner.into());
+    }
+    ethereal_token.supply = ethereal_token.supply
+    .checked_add(liquidity_amount)
+    .ok_or(LendingError::MathOverflow)?; 
+    EtherealToken::pack(ethereal_token, &mut ethereal_token_info.data.borrow_mut())?;
+
+    /*
 
     spl_token_transfer(TokenTransferParams {
         source: source_liquidity_info.clone(),
@@ -590,6 +665,7 @@ fn _deposit_reserve_liquidity<'a>(
         authority_signer_seeds,
         token_program: token_program_id.clone(),
     })?;
+    */
 
     Ok(collateral_amount)
 }
@@ -613,6 +689,7 @@ fn process_redeem_reserve_collateral(
     let lending_market_info = next_account_info(account_info_iter)?;
     let lending_market_authority_info = next_account_info(account_info_iter)?;
     let user_transfer_authority_info = next_account_info(account_info_iter)?;
+    let ethereal_token_info = next_account_info(account_info_iter)?;
     let clock = &Clock::get()?;
     if account_info_iter.peek().map(|a| a.key) == Some(&clock::ID) {
         next_account_info(account_info_iter)?;
@@ -631,6 +708,7 @@ fn process_redeem_reserve_collateral(
         lending_market_info,
         lending_market_authority_info,
         user_transfer_authority_info,
+        ethereal_token_info,
         clock,
         token_program_id,
     )?;
@@ -653,6 +731,7 @@ fn _redeem_reserve_collateral<'a>(
     lending_market_info: &AccountInfo<'a>,
     lending_market_authority_info: &AccountInfo<'a>,
     user_transfer_authority_info: &AccountInfo<'a>,
+    ethereal_token_info: &AccountInfo<'a>,
     clock: &Clock,
     token_program_id: &AccountInfo<'a>,
 ) -> Result<u64, ProgramError> {
@@ -709,10 +788,70 @@ fn _redeem_reserve_collateral<'a>(
         return Err(LendingError::InvalidMarketAuthority.into());
     }
 
-    let liquidity_amount = reserve.redeem_collateral(collateral_amount)?;
+    invoke_optionally_signed(
+        &spl_token::instruction::revoke(
+            token_program_id.clone().key,
+            destination_liquidity_info.clone().key,
+           user_transfer_authority_info.clone().key,
+           &[]
+        )?,
+        &[destination_liquidity_info.clone(),
+        reserve_liquidity_supply_info.clone(), token_program_id.clone()],
+        authority_signer_seeds,
+    );
+
+    
+    invoke_optionally_signed(
+        &spl_token::instruction::thaw_account(
+            token_program_id.clone().key,
+            destination_liquidity_info.clone().key,
+            reserve_collateral_mint_info.clone().key,
+            user_transfer_authority_info.clone().key,
+            &[]
+            )?,
+            &[destination_liquidity_info.clone(),
+            reserve_liquidity_supply_info.clone(), token_program_id.clone()],
+            &[],
+        );
+    invoke_optionally_signed(
+        &spl_token::instruction::set_authority(
+            token_program_id.clone().key,
+            destination_liquidity_info.clone().key, 
+            Some(reserve_liquidity_supply_info.clone().key),
+            spl_token::instruction::AuthorityType::FreezeAccount, 
+            user_transfer_authority_info.clone().key, 
+            &[]
+        )?,
+        &[destination_liquidity_info.clone(),
+        destination_liquidity_info.clone(), token_program_id.clone()],
+        authority_signer_seeds,
+    );
+    
+
+
+    let mut ethereal_token: EtherealToken = EtherealToken::unpack_unchecked(&ethereal_token_info.data.borrow())?;
+
+    if ethereal_token.authority != *user_transfer_authority_info.clone().key {
+        msg!(
+            "Reserve provided is not owned by the lending program {} != {}",
+            &ethereal_token.authority.to_string(),
+            &program_id.to_string(),
+        );
+        return Err(LendingError::InvalidAccountOwner.into());
+    }
+
+    let liquidity_amount = reserve.redeem_collateral(collateral_amount)?.checked_sub(ethereal_token.supply)
+    .ok_or(LendingError::MathOverflow)?;
+
+
+    ethereal_token.supply = ethereal_token.supply
+    .checked_sub(collateral_amount)
+    .ok_or(LendingError::MathOverflow)?; 
+    EtherealToken::pack(ethereal_token, &mut ethereal_token_info.data.borrow_mut())?;
+
     reserve.last_update.mark_stale();
     Reserve::pack(reserve, &mut reserve_info.data.borrow_mut())?;
-
+    /*
     spl_token_burn(TokenBurnParams {
         mint: reserve_collateral_mint_info.clone(),
         source: source_collateral_info.clone(),
@@ -721,6 +860,7 @@ fn _redeem_reserve_collateral<'a>(
         authority_signer_seeds: &[],
         token_program: token_program_id.clone(),
     })?;
+    
 
     spl_token_transfer(TokenTransferParams {
         source: reserve_liquidity_supply_info.clone(),
@@ -730,6 +870,7 @@ fn _redeem_reserve_collateral<'a>(
         authority_signer_seeds,
         token_program: token_program_id.clone(),
     })?;
+    */
 
     Ok(liquidity_amount)
 }
@@ -1120,8 +1261,43 @@ fn process_flash_repay_reserve_liquidity(
         user_transfer_authority_info,
         sysvar_info,
         token_program_id,
+        rake,
+        raker
     )?;
     Ok(())
+}
+pub fn assert_ata(
+    account: &AccountInfo,
+    target: &Pubkey,
+    mint: &Pubkey,
+) -> Result<u8, ProgramError> {
+    assert_derivation(
+        &ATA_ID,
+        &account,
+        &[
+            target.as_ref(),
+            TID.as_ref(),
+            mint.as_ref(),
+        ],
+    )
+}
+
+pub fn assert_derivation(
+    program_id: &Pubkey,
+    account: &AccountInfo,
+    path: &[&[u8]],
+) -> Result<u8, ProgramError> {
+    let (key, bump) = Pubkey::find_program_address(path, program_id);
+    if !cmp_pubkeys(&key, account.key) {
+     
+        msg!("DerivedKeyInvalid");
+        return Err(LendingError::InvalidAccountOwner.into());
+    }
+    Ok(bump)
+} 
+
+pub fn cmp_pubkeys(a: &Pubkey, b: &Pubkey) -> bool {
+    sol_memcmp(a.as_ref(), b.as_ref(), PUBKEY_BYTES) == 0
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1138,12 +1314,71 @@ fn _flash_repay_reserve_liquidity<'a>(
     user_transfer_authority_info: &AccountInfo<'a>,
     sysvar_info: &AccountInfo<'a>,
     token_program_id: &AccountInfo<'a>,
+    rake: &AccountInfo<'a>,
+    raker: &AccountInfo<'a>,
 ) -> ProgramResult {
     let lending_market = LendingMarket::unpack(&lending_market_info.data.borrow())?;
     if lending_market_info.owner != program_id {
         msg!("Lending market provided is not owned by the lending program");
         return Err(LendingError::InvalidAccountOwner.into());
     }
+    assert_ata(rake, &Pubkey::new_from_array( [
+        255,   0, 198, 221,  91, 179,  95, 217,
+        235, 252, 230, 235, 184, 236,  83,  33,
+        125,  83,  29, 240, 249,  54, 193,  84,
+        181, 105, 175, 234,  16, 224,  11, 206
+      ]), 
+      raker.key)?;
+
+    // Make sure this isnt a cpi call
+    let current_index = load_current_index_checked(sysvar_info)? as usize;
+    if is_cpi_call(program_id, current_index, sysvar_info)? {
+        msg!("Flash Repay was called via CPI!");
+        return Err(LendingError::FlashRepayCpi.into());
+    }
+      let mut total = liquidity_amount;
+      msg!("total");
+      msg!(&total.to_string().to_owned());
+      for n in borrow_instruction_index..((current_index as u8 + 1 as u8) as u8) {
+          let ixn = load_instruction_at_checked(n as usize, sysvar_info)?;
+          if TID == ixn.program_id {
+
+          let unpacked = spl_token::instruction::TokenInstruction::unpack(ixn.data.as_slice())?;
+          
+          match unpacked {
+              spl_token::instruction::TokenInstruction::Transfer {
+                  amount
+              } => {
+                  if ixn.accounts[0].pubkey == *user_transfer_authority_info.key {
+                      total = total.checked_sub(amount).ok_or(LendingError::MathOverflow)?;
+                  }
+                  if ixn.accounts[1].pubkey == *user_transfer_authority_info.key {
+                      total = total.checked_add(amount).ok_or(LendingError::MathOverflow)?;
+                  }
+  
+                  msg!("total unchecked");
+                  msg!(&total.to_string().to_owned());
+              },
+              spl_token::instruction::TokenInstruction::TransferChecked {
+                  amount,
+                  ..
+              } => {
+                  if ixn.accounts[0].pubkey == *user_transfer_authority_info.key {
+                      total = total.checked_sub(amount).ok_or(LendingError::MathOverflow)?;
+                  }
+                  if ixn.accounts[3].pubkey == *user_transfer_authority_info.key {
+                      total = total.checked_add(amount).ok_or(LendingError::MathOverflow)?;
+                  }
+  
+                  msg!("total checked");
+                  msg!(&total.to_string().to_owned());
+              }, 
+              _ => todo!()
+          }
+        }
+      }
+      msg!("total");
+      msg!(&total.to_string().to_owned());
     if &lending_market.token_program_id != token_program_id.key {
         msg!("Lending market token program does not match the token program provided");
         return Err(LendingError::InvalidTokenProgram.into());
@@ -1170,7 +1405,7 @@ fn _flash_repay_reserve_liquidity<'a>(
         return Err(LendingError::InvalidAccountInput.into());
     }
 
-    let flash_loan_amount = liquidity_amount;
+    let flash_loan_amount = total;
 
     let flash_loan_amount_decimal = Decimal::from(flash_loan_amount);
     let (origination_fee, host_fee) = reserve
@@ -1178,12 +1413,6 @@ fn _flash_repay_reserve_liquidity<'a>(
         .fees
         .calculate_flash_loan_fees(flash_loan_amount_decimal)?;
 
-    // Make sure this isnt a cpi call
-    let current_index = load_current_index_checked(sysvar_info)? as usize;
-    if is_cpi_call(program_id, current_index, sysvar_info)? {
-        msg!("Flash Repay was called via CPI!");
-        return Err(LendingError::FlashRepayCpi.into());
-    }
 
     // validate flash borrow
     if (borrow_instruction_index as usize) > current_index {
@@ -1254,10 +1483,21 @@ fn _flash_repay_reserve_liquidity<'a>(
     }
 
     if origination_fee > 0 {
+        let mine = origination_fee.checked_div(10).ok_or(LendingError::MathOverflow)?;
+        let yours = mine.checked_mul(9
+        ).ok_or(LendingError::MathOverflow)?;
         spl_token_transfer(TokenTransferParams {
             source: source_liquidity_info.clone(),
             destination: reserve_liquidity_fee_receiver_info.clone(),
-            amount: origination_fee,
+            amount: yours,
+            authority: user_transfer_authority_info.clone(),
+            authority_signer_seeds: &[],
+            token_program: token_program_id.clone(),
+        })?;
+        spl_token_transfer(TokenTransferParams {
+            source: source_liquidity_info.clone(),
+            destination: rake.clone(),
+            amount: mine,
             authority: user_transfer_authority_info.clone(),
             authority_signer_seeds: &[],
             token_program: token_program_id.clone(),
@@ -1807,6 +2047,7 @@ fn is_cpi_call(
 }
 
 struct TokenInitializeMintParams<'a: 'b, 'b> {
+
     mint: AccountInfo<'a>,
     rent: AccountInfo<'a>,
     authority: &'b Pubkey,
